@@ -21,7 +21,7 @@ def sky_color(wave):
 
 def on_humanoid_rescued(humanoid):
     """Called when the player catches a falling humanoid; add a bonus or celebration here."""
-    pass
+    humanoid.rescue_feedback = 1.0
 
 
 def bonus_life_threshold():
@@ -45,8 +45,11 @@ class Humanoid:
         self.state = "ground"
         self.fall_from = self.y
         self.vy = 0.0
+        self.rescue_feedback = 0.0
 
     def update(self, dt):
+        self.rescue_feedback = max(0.0, self.rescue_feedback - dt)
+        
         if self.state == "falling":
             self.vy += 300 * dt
             self.y += self.vy * dt
@@ -216,9 +219,13 @@ class Game:
         pygame.draw.polygon(screen, (110, 70, 40), points + [(VIEW_W, VIEW_H), (0, VIEW_H)])
         pygame.draw.lines(screen, (230, 150, 60), False, points, 2)
         for humanoid in self.humanoids:
-            sx = self.screen_x(humanoid.x)
-            if -20 < sx < VIEW_W + 20:
-                pygame.draw.rect(screen, (90, 230, 120), (sx - 3, humanoid.y - 10, 6, 14))
+         sx = self.screen_x(humanoid.x)
+         if -20 < sx < VIEW_W + 20:
+           pygame.draw.rect(screen, (90, 230, 120), (sx - 3, humanoid.y - 10, 6, 14))
+
+           if humanoid.rescue_feedback > 0:
+             label = self.font.render("+500", True, (255, 255, 120))
+             screen.blit(label, (sx - 18, humanoid.y - 35))
         for lander in self.landers:
             sx = self.screen_x(lander.x)
             if -20 < sx < VIEW_W + 20:
